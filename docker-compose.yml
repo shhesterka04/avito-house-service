@@ -1,0 +1,27 @@
+version: '3.3'
+
+services:
+  service:
+    build: .
+    restart: on-failure
+    depends_on:
+      - postgres
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=postgres
+      - HOST_ADDR=0.0.0.0:8080
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./config.env:/root/config.env
+  postgres:
+    image: postgres:13.3
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - '5432:5432'
