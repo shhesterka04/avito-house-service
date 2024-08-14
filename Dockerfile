@@ -1,10 +1,21 @@
+FROM golang:1.22-alpine AS builder
+RUN apk add --no-cache git
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/bin/house-service ./cmd/house-service
+
+
 FROM alpine:latest
 
-WORKDIR /root/
+WORKDIR /app
 
-# Copy the pre-built binary from the local ./bin/ directory
-COPY ./bin/house-service /bin/house-service
+COPY --from=builder /app/bin/house-service .
 
-
-# Run the binary
 CMD ["./house-service"]

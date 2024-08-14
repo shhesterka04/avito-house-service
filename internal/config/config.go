@@ -30,7 +30,7 @@ func LoadConfig(path string) (*Config, error) {
 	path = filepath.Dir(path)
 
 	viper.SetDefault("HOST_ADDR", "0.0.0.0:8080")
-	viper.SetDefault("DB_HOST", "localhost")
+	viper.SetDefault("DB_HOST", "postgres")
 	viper.SetDefault("DB_PORT", 5432)
 	viper.SetDefault("DB_USER", "postgres")
 	viper.SetDefault("DB_PASSWORD", "postgres")

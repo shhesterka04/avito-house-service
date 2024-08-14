@@ -6,7 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
-	"github.com/shhesterka04/house-service/internal/logger"
+	"github.com/shhesterka04/house-service/pkg/logger"
 )
 
 type Database struct {

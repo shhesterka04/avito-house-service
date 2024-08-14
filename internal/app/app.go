@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/shhesterka04/house-service/internal/config"
-	"github.com/shhesterka04/house-service/internal/db"
-	"github.com/shhesterka04/house-service/internal/logger"
+	"github.com/shhesterka04/house-service/pkg/db"
+	"github.com/shhesterka04/house-service/pkg/logger"
 )
 
 func Run(ctx context.Context) error {

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/shhesterka04/house-service/internal/app"
-	"github.com/shhesterka04/house-service/internal/logger"
+	"github.com/shhesterka04/house-service/pkg/logger"
 )
 
 func main() {

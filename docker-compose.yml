@@ -1,18 +1,8 @@
-version: '3.3'
-
 services:
   service:
-    build: .
-    restart: on-failure
+    image: house-service
     depends_on:
       - postgres
-    environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=postgres
-      - HOST_ADDR=0.0.0.0:8080
     ports:
       - '8080:8080'
     volumes:
