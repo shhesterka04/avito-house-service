@@ -4,13 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	_ "github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pkg/errors"
+	"github.com/pressly/goose/v3"
 	"github.com/shhesterka04/house-service/pkg/logger"
 )
 
 type Database struct {
-	cluster *pgxpool.Pool
+	Cluster *pgxpool.Pool
 }
 
 type Client struct {
@@ -35,13 +38,22 @@ func NewClient(dbName, dbUser, dbUserPass, dbHost string, dbPort int) *Client {
 func (c *Client) Connect(ctx context.Context) (*Database, error) {
 	dsn := c.generateDsn()
 	logger.Infof(ctx, "connecting to database: %v", dsn)
-	pool, err := pgxpool.Connect(ctx, dsn)
+	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
 		return nil, errors.Wrap(err, "pgxpool connect")
 	}
 
 	c.pgpool = pool
-	return &Database{cluster: pool}, nil
+	return &Database{Cluster: pool}, nil
+}
+
+func (c *Client) Migrate(migrationDir string) error {
+	db := stdlib.OpenDBFromPool(c.pgpool)
+	if err := goose.Up(db, migrationDir); err != nil {
+		return errors.Wrap(err, "goose up")
+	}
+
+	return nil
 }
 
 func (c *Client) Close() {

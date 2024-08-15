@@ -3,9 +3,11 @@
 CREATE TYPE user_type AS ENUM ('client', 'moderator');
 CREATE TYPE flat_status AS ENUM ('created', 'on moderation', 'approved', 'declined');
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE users
 (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     type user_type NOT NULL
@@ -39,4 +41,9 @@ CREATE INDEX idx_house_id ON flats(house_id);
 DROP TABLE users;
 DROP TABLE flats;
 DROP TABLE house;
+
+DROP TYPE user_type;
+DROP TYPE flat_status;
+
+DROP INDEX idx_house_id;
 -- +goose StatementEnd
