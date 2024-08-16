@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/shhesterka04/house-service/internal/repository"
 	"github.com/shhesterka04/house-service/pkg/logger"
 )
@@ -36,27 +38,14 @@ func NewAuthService(userRepo UserRepo) *AuthService {
 	return &AuthService{userRepo: userRepo}
 }
 
-func (s *AuthService) DummyLogin(w http.ResponseWriter, r *http.Request) {
-	var req DummyLoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
-		return
-	}
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
+}
 
-	var token string
-	switch req.UserType {
-	case "client":
-		token = "client_token"
-	case "moderator":
-		token = "moderator_token"
-	default:
-		http.Error(w, "Invalid user type", http.StatusBadRequest)
-		return
-	}
-
-	res := LoginResponse{Token: token}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
 
 func (s *AuthService) Register(w http.ResponseWriter, r *http.Request) {
@@ -71,14 +60,20 @@ func (s *AuthService) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hashedPassword, err := hashPassword(req.Password)
+	if err != nil {
+		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		return
+	}
+
 	user := repository.User{
 		Email:    req.Email,
-		Password: req.Password,
+		Password: hashedPassword,
 		Type:     req.UserType,
 	}
 
-	if err := s.userRepo.CreateUser(r.Context(), user); err != nil {
-		http.Error(w, "User already exists", http.StatusBadRequest)
+	if err = s.userRepo.CreateUser(r.Context(), user); err != nil {
+		http.Error(w, "create user", http.StatusBadRequest)
 		return
 	}
 
@@ -99,7 +94,7 @@ func (s *AuthService) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Password != req.Password {
+	if !checkPasswordHash(req.Password, user.Password) {
 		http.Error(w, "Invalid password", http.StatusBadRequest)
 		return
 	}

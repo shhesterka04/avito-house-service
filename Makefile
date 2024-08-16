@@ -2,7 +2,7 @@ MIGRATION_FOLDER=$(CURDIR)/migrations
 DOCKER_COMPOSE_FILE=docker-compose.yml
 POSTGRES_SETUP_TEST ?= user=postgres password=postgres dbname=postgres host=postgres port=5432 sslmode=disable
 
-.PHONY: docker-compose-up migration-up migration-down build docker-build
+.PHONY: docker-compose-up migration-up migration-down build docker-build gen-dto
 
 migration-create:
 	goose -dir "$(MIGRATION_FOLDER)" create "$(name)" sql
@@ -21,3 +21,7 @@ docker-build: build
 
 docker-compose-up: docker-build
 	docker-compose up
+
+gen-dto:
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
+	oapi-codegen --package=dto --generate types ./api/api.yaml > ./internal/dto/openapi.gen.go

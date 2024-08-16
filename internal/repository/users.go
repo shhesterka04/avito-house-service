@@ -8,6 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+var ErrUserExists = errors.New("user already exists")
+
 type DBUser interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
@@ -29,8 +31,16 @@ func NewUserRepository(db DBUser) *UserRepository {
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user User) error {
-	if _, err := r.db.Exec(ctx, "INSERT INTO users (email, password, type) VALUES ($1, $2, $3)", user.Email, user.Password, user.Type); err != nil {
-		return errors.Wrap(err, "create user")
+	var existingUser User
+	err := r.db.QueryRow(ctx, "SELECT id FROM users WHERE email = $1", user.Email).Scan(&existingUser.UUID)
+	if err == nil {
+		return errors.Wrap(ErrUserExists, "user already exists")
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return errors.Wrap(err, "query row")
+	}
+
+	if _, err = r.db.Exec(ctx, "INSERT INTO users (email, password, type) VALUES ($1, $2, $3)", user.Email, user.Password, user.Type); err != nil {
+		return errors.Wrap(err, "exec")
 	}
 
 	return nil

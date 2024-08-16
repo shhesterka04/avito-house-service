@@ -9,6 +9,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+var ErrHouseExists = errors.New("house already exists")
+
 type DBHouse interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
@@ -32,7 +34,15 @@ func NewHouseRepository(db DBHouse) *HouseRepository {
 }
 
 func (r *HouseRepository) CreateHouse(ctx context.Context, house *House) (*House, error) {
-	if _, err := r.db.Exec(ctx, "INSERT INTO house (address, year, developer) VALUES ($1, $2, $3)", house.Address, house.Year, house.Developer); err != nil {
+	var existingHouse House
+	err := r.db.QueryRow(ctx, "SELECT id FROM users WHERE address = $1", house.Address).Scan(&existingHouse.Id)
+	if err == nil {
+		return nil, errors.Wrap(ErrHouseExists, "house already exists")
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return nil, errors.Wrap(err, "query row")
+	}
+
+	if _, err = r.db.Exec(ctx, "INSERT INTO house (address, year, developer) VALUES ($1, $2, $3)", house.Address, house.Year, house.Developer); err != nil {
 		return nil, errors.Wrap(err, "create house")
 	}
 

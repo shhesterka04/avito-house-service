@@ -9,6 +9,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+var ErrFlatExists = errors.New("flat already exists")
+
 type DBFlat interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
@@ -33,7 +35,15 @@ func NewFlatRepository(db DBFlat) *FlatRepository {
 }
 
 func (r *FlatRepository) CreateFlat(ctx context.Context, flat *Flat) (*Flat, error) {
-	if _, err := r.db.Exec(ctx, "INSERT INTO flats (house_id, status, number, rooms, price) VALUES ($1, $2, $3, $4, $5)", flat.HouseId, "created", flat.Number, flat.Rooms, flat.Price); err != nil {
+	var existingFlat Flat
+	err := r.db.QueryRow(ctx, "SELECT id FROM flats WHERE house_id = $1 AND number = $2", flat.HouseId, flat.Number).Scan(&existingFlat.ID)
+	if err == nil {
+		return nil, errors.Wrap(ErrFlatExists, "flat already exists")
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return nil, errors.Wrap(err, "query row")
+	}
+
+	if _, err = r.db.Exec(ctx, "INSERT INTO flats (house_id, status, number, rooms, price) VALUES ($1, $2, $3, $4, $5)", flat.HouseId, "created", flat.Number, flat.Rooms, flat.Price); err != nil {
 		return nil, errors.Wrap(err, "create flat")
 	}
 

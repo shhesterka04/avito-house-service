@@ -73,6 +73,29 @@ func NewFlatService(flatRepo FlatRepo, houseFlatRepo HouseFlatRepo) *FlatService
 	}
 }
 
+func (s *AuthService) DummyLogin(w http.ResponseWriter, r *http.Request) {
+	var req DummyLoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	var token string
+	switch req.UserType {
+	case "client":
+		token = "client_token"
+	case "moderator":
+		token = "moderator_token"
+	default:
+		http.Error(w, "Invalid user type", http.StatusBadRequest)
+		return
+	}
+
+	res := LoginResponse{Token: token}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
+}
+
 func (s *FlatService) CreateFlat(w http.ResponseWriter, r *http.Request) {
 	var req CreateFlatRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
