@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var validTokens = map[string]string{
+var ValidTokens = map[string]string{
 	"client_token":    "client",
 	"moderator_token": "moderator",
 }
@@ -20,7 +20,7 @@ func AuthMiddleware(requiredType string) func(http.Handler) http.Handler {
 			}
 
 			token := strings.TrimPrefix(authHeader, "Bearer ")
-			userType, valid := validTokens[token]
+			userType, valid := ValidTokens[token]
 			if !valid {
 				http.Error(w, "Invalid token", http.StatusUnauthorized)
 				return
