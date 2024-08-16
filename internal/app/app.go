@@ -9,6 +9,7 @@ import (
 	"github.com/shhesterka04/house-service/internal/handlers"
 	"github.com/shhesterka04/house-service/internal/middleware"
 	"github.com/shhesterka04/house-service/internal/repository"
+	"github.com/shhesterka04/house-service/internal/service"
 	"github.com/shhesterka04/house-service/pkg/db"
 	"github.com/shhesterka04/house-service/pkg/logger"
 )
@@ -42,7 +43,8 @@ func Run(ctx context.Context) error {
 	defer pgClient.Close()
 
 	userRepo := repository.NewUserRepository(dbConn.Cluster)
-	userService := handlers.NewAuthService(userRepo)
+	authService := service.NewAuthService(userRepo)
+	authHandlers := handlers.NewAuthHandlers(authService)
 
 	houseRepo := repository.NewHouseRepository(dbConn.Cluster)
 	houseService := handlers.NewHouseService(houseRepo)
@@ -51,9 +53,9 @@ func Run(ctx context.Context) error {
 	flatService := handlers.NewFlatService(flatRepo, houseRepo)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/dummyLogin", userService.DummyLogin)
-	mux.HandleFunc("/login", userService.Login)
-	mux.HandleFunc("/register", userService.Register)
+	mux.HandleFunc("GET /dummyLogin", authHandlers.DummyLogin)
+	mux.HandleFunc("POST /login", authHandlers.Login)
+	mux.HandleFunc("POST /register", authHandlers.Register)
 
 	protectedRoutes := http.NewServeMux()
 	protectedRoutes.Handle("POST /house/create", middleware.AuthMiddleware("moderator")(http.HandlerFunc(houseService.CreateHouse)))

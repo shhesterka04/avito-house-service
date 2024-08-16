@@ -34,7 +34,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user User) error {
 	var existingUser User
 	err := r.db.QueryRow(ctx, "SELECT id FROM users WHERE email = $1", user.Email).Scan(&existingUser.UUID)
 	if err == nil {
-		return errors.Wrap(ErrUserExists, "user already exists")
+		return errors.Wrap(ErrUserExists, "query row")
 	} else if !errors.Is(err, pgx.ErrNoRows) {
 		return errors.Wrap(err, "query row")
 	}
