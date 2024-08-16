@@ -50,17 +50,24 @@ func Run(ctx context.Context) error {
 	flatRepo := repository.NewFlatRepository(dbConn.Cluster)
 	flatService := handlers.NewFlatService(flatRepo, houseRepo)
 
-	http.HandleFunc("POST /dummyLogin", userService.DummyLogin)
-	http.HandleFunc("POST /register", userService.Register)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/dummyLogin", userService.DummyLogin)
+	mux.HandleFunc("/login", userService.Login)
+	mux.HandleFunc("/register", userService.Register)
 
 	protectedRoutes := http.NewServeMux()
 	protectedRoutes.Handle("POST /house/create", middleware.AuthMiddleware("moderator")(http.HandlerFunc(houseService.CreateHouse)))
 	protectedRoutes.Handle("GET /house/{id}", middleware.AuthMiddleware("client")(http.HandlerFunc(flatService.GetFlatsByHouseID)))
-	protectedRoutes.Handle("POST /house/{id}/subscribe", middleware.AuthMiddleware("moderator")(http.HandlerFunc(houseService.SubscribeToHouse)))
+	protectedRoutes.Handle("POST /house/{id}/subscribe", middleware.AuthMiddleware("client")(http.HandlerFunc(houseService.SubscribeToHouse)))
 	protectedRoutes.Handle("POST /flat/create", middleware.AuthMiddleware("client")(http.HandlerFunc(flatService.CreateFlat)))
 	protectedRoutes.Handle("POST /flat/update", middleware.AuthMiddleware("client")(http.HandlerFunc(flatService.UpdateFlat)))
 
-	http.ListenAndServe(cfg.HostAddr, nil)
+	mux.Handle("/", protectedRoutes)
+
+	logger.Infof(ctx, "starting server on %s", cfg.HostAddr)
+	if err := http.ListenAndServe(cfg.HostAddr, mux); err != nil {
+		return errors.Wrap(err, "listen and serve")
+	}
 
 	return nil
 }
