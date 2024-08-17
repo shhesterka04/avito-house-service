@@ -14,6 +14,8 @@ import (
 	"github.com/shhesterka04/house-service/pkg/logger"
 )
 
+const migrationDir = "/migrations"
+
 func Run(ctx context.Context) error {
 	logger.Infof(ctx, "starting app")
 
@@ -37,7 +39,7 @@ func Run(ctx context.Context) error {
 	}
 	logger.Infof(ctx, "connected to database")
 
-	if err = pgClient.Migrate("/migrations"); err != nil {
+	if err = pgClient.Migrate(migrationDir); err != nil {
 		return errors.Wrap(err, "migrate")
 	}
 	defer pgClient.Close()
