@@ -92,7 +92,7 @@ func (s *FlatService) GetFlatsByHouseID(ctx context.Context, houseIDStr, token s
 		return nil, errors.New("invalid token")
 	}
 
-	flats, err := s.flatRepo.GetFlatByHouseID(ctx, houseID, userType)
+	flats, err := s.flatRepo.GetFlatByHouseID(ctx, houseID, string(userType))
 	if err != nil {
 		return nil, err
 	}
