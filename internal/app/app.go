@@ -47,7 +47,8 @@ func Run(ctx context.Context) error {
 	authHandlers := handlers.NewAuthHandlers(authService)
 
 	houseRepo := repository.NewHouseRepository(dbConn.Cluster)
-	houseService := handlers.NewHouseService(houseRepo)
+	houseService := service.NewHouseService(houseRepo)
+	houseHandlers := handlers.NewHouseHandler(houseService)
 
 	flatRepo := repository.NewFlatRepository(dbConn.Cluster)
 	flatService := handlers.NewFlatService(flatRepo, houseRepo)
@@ -58,9 +59,9 @@ func Run(ctx context.Context) error {
 	mux.HandleFunc("POST /register", authHandlers.Register)
 
 	protectedRoutes := http.NewServeMux()
-	protectedRoutes.Handle("POST /house/create", middleware.AuthMiddleware("moderator")(http.HandlerFunc(houseService.CreateHouse)))
+	protectedRoutes.Handle("POST /house/create", middleware.AuthMiddleware("moderator")(http.HandlerFunc(houseHandlers.CreateHouse)))
 	protectedRoutes.Handle("GET /house/{id}", middleware.AuthMiddleware("client")(http.HandlerFunc(flatService.GetFlatsByHouseID)))
-	protectedRoutes.Handle("POST /house/{id}/subscribe", middleware.AuthMiddleware("client")(http.HandlerFunc(houseService.SubscribeToHouse)))
+	protectedRoutes.Handle("POST /house/{id}/subscribe", middleware.AuthMiddleware("client")(http.HandlerFunc(houseHandlers.SubscribeToHouse)))
 	protectedRoutes.Handle("POST /flat/create", middleware.AuthMiddleware("client")(http.HandlerFunc(flatService.CreateFlat)))
 	protectedRoutes.Handle("POST /flat/update", middleware.AuthMiddleware("client")(http.HandlerFunc(flatService.UpdateFlat)))
 

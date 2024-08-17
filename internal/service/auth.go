@@ -75,26 +75,25 @@ func (s *AuthService) DummyLogin(ctx context.Context, req dto.GetDummyLoginParam
 	return token, nil
 }
 
-//TODO: разобраться с openAPI
-//func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (string, error) {
-//	user, err := s.userRepo.GetUser(ctx, req.Email)
-//	if err != nil {
-//		return "", errors.New("invalid email")
-//	}
-//
-//	if !checkPasswordHash(req.Password, user.Password) {
-//		return "", errors.New("invalid password")
-//	}
-//
-//	var token string
-//	switch user.Type {
-//	case "client":
-//		token = "client_token"
-//	case "moderator":
-//		token = "moderator_token"
-//	default:
-//		return "", errors.New("invalid user type")
-//	}
-//
-//	return token, nil
-//}
+func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (string, error) {
+	user, err := s.userRepo.GetUser(ctx, req.Email)
+	if err != nil {
+		return "", errors.New("invalid email")
+	}
+
+	if !checkPasswordHash(req.Password, user.Password) {
+		return "", errors.New("invalid password")
+	}
+
+	var token string
+	switch user.Type {
+	case "client":
+		token = "client_token"
+	case "moderator":
+		token = "moderator_token"
+	default:
+		return "", errors.New("invalid user type")
+	}
+
+	return token, nil
+}

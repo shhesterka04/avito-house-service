@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/pkg/errors"
+	"github.com/shhesterka04/house-service/internal/dto"
 )
 
 var ErrHouseExists = errors.New("house already exists")
@@ -14,15 +15,6 @@ var ErrHouseExists = errors.New("house already exists")
 type DBHouse interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
-}
-
-type House struct {
-	Id        int
-	Address   string
-	Year      int
-	Developer string
-	CreatedAt time.Time
-	UpdatedAt time.Time
 }
 
 type HouseRepository struct {
@@ -33,8 +25,8 @@ func NewHouseRepository(db DBHouse) *HouseRepository {
 	return &HouseRepository{db: db}
 }
 
-func (r *HouseRepository) CreateHouse(ctx context.Context, house *House) (*House, error) {
-	var existingHouse House
+func (r *HouseRepository) CreateHouse(ctx context.Context, house *dto.House) (*dto.House, error) {
+	var existingHouse dto.House
 	err := r.db.QueryRow(ctx, "SELECT id FROM users WHERE address = $1", house.Address).Scan(&existingHouse.Id)
 	if err == nil {
 		return nil, errors.Wrap(ErrHouseExists, "house already exists")
@@ -49,14 +41,14 @@ func (r *HouseRepository) CreateHouse(ctx context.Context, house *House) (*House
 	return house, nil
 }
 
-func (r *HouseRepository) UpdateHouse(ctx context.Context, id int, updAt time.Time) (*House, error) {
+func (r *HouseRepository) UpdateHouse(ctx context.Context, id int, updAt time.Time) (*dto.House, error) {
 	if _, err := r.db.Exec(ctx, "UPDATE house SET updated_at = $1 WHERE id = $2", updAt, id); err != nil {
 		return nil, errors.Wrap(err, "update house")
 	}
 
 	row := r.db.QueryRow(ctx, "SELECT id, address, year, developer, created_at, updated_at FROM house WHERE id = $1", id)
-	house := &House{}
-	if err := row.Scan(&house.Id, &house.Address, &house.Year, &house.Developer, &house.CreatedAt, &house.UpdatedAt); err != nil {
+	house := &dto.House{}
+	if err := row.Scan(&house.Id, &house.Address, &house.Year, &house.Developer, &house.CreatedAt, &house.UpdateAt); err != nil {
 		return nil, errors.Wrap(err, "get house")
 	}
 
