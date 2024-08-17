@@ -78,6 +78,11 @@ func (s *FlatService) UpdateFlat(ctx context.Context, req dto.PostFlatUpdateJSON
 		return nil, err
 	}
 
+	_, err = s.houseFlatRepo.UpdateHouse(ctx, updatedFlat.HouseId, time.Now())
+	if err != nil {
+		return nil, err
+	}
+
 	return updatedFlat, nil
 }
 

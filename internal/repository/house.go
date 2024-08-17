@@ -27,7 +27,7 @@ func NewHouseRepository(db DBHouse) *HouseRepository {
 
 func (r *HouseRepository) CreateHouse(ctx context.Context, house *dto.House) (*dto.House, error) {
 	var existingHouse dto.House
-	err := r.db.QueryRow(ctx, "SELECT id FROM users WHERE address = $1", house.Address).Scan(&existingHouse.Id)
+	err := r.db.QueryRow(ctx, "SELECT id FROM house WHERE address = $1", house.Address).Scan(&existingHouse.Id)
 	if err == nil {
 		return nil, errors.Wrap(ErrHouseExists, "house already exists")
 	} else if !errors.Is(err, pgx.ErrNoRows) {

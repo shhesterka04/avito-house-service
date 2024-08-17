@@ -6,6 +6,7 @@ import (
 
 	"github.com/shhesterka04/house-service/internal/dto"
 	"github.com/shhesterka04/house-service/internal/service"
+	"github.com/shhesterka04/house-service/pkg/logger"
 )
 
 type HouseHandler struct {
@@ -19,12 +20,14 @@ func NewHouseHandler(houseService *service.HouseService) *HouseHandler {
 func (h *HouseHandler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 	var req dto.PostHouseCreateJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger.Errorf(r.Context(), "Error decoding request: %v", err)
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
 	house, err := h.houseService.CreateHouse(r.Context(), req)
 	if err != nil {
+		logger.Errorf(r.Context(), "Error creating house: %v", err)
 		http.Error(w, "Failed to create house", http.StatusInternalServerError)
 		return
 	}

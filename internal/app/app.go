@@ -17,7 +17,7 @@ import (
 const migrationDir = "/migrations"
 
 func Run(ctx context.Context) error {
-	logger.Infof(ctx, "starting app")
+	logger.Info(ctx, "starting app")
 
 	cfg, err := config.LoadConfig("")
 	if err != nil {
@@ -40,6 +40,7 @@ func Run(ctx context.Context) error {
 	logger.Infof(ctx, "connected to database")
 
 	if err = pgClient.Migrate(migrationDir); err != nil {
+		logger.Errorf(ctx, "migrate error: %v", err)
 		return errors.Wrap(err, "migrate")
 	}
 	defer pgClient.Close()
@@ -59,7 +60,7 @@ func Run(ctx context.Context) error {
 	mux := routes.NewRouter(authHandlers, houseHandlers, flatHandlers)
 
 	logger.Infof(ctx, "starting server on %s", cfg.HostAddr)
-	if err := http.ListenAndServe(cfg.HostAddr, mux); err != nil {
+	if err = http.ListenAndServe(cfg.HostAddr, mux); err != nil {
 		return errors.Wrap(err, "listen and serve")
 	}
 

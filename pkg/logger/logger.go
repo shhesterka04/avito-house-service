@@ -11,6 +11,11 @@ type ctxKey struct{}
 
 var defaultLogger *zap.Logger
 
+type Config struct {
+	Level       string
+	Development bool
+}
+
 func FromContext(ctx context.Context) *zap.Logger {
 	if logger, ok := ctx.Value(ctxKey{}).(*zap.Logger); ok {
 		return logger
@@ -38,11 +43,33 @@ func Fatalf(ctx context.Context, format string, args ...interface{}) {
 	FromContext(ctx).Sugar().Fatalf(format, args...)
 }
 
-func Init() {
+func Debugf(ctx context.Context, format string, args ...interface{}) {
+	FromContext(ctx).Sugar().Debugf(format, args...)
+}
+
+func Init(config Config) {
 	var err error
-	config := zap.NewDevelopmentConfig()
-	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	defaultLogger, err = config.Build()
+	var zapConfig zap.Config
+
+	if config.Development {
+		zapConfig = zap.NewDevelopmentConfig()
+	} else {
+		zapConfig = zap.NewProductionConfig()
+	}
+
+	switch config.Level {
+	case "debug":
+		zapConfig.Level = zap.NewAtomicLevelAt(zapcore.DebugLevel)
+	case "info":
+		zapConfig.Level = zap.NewAtomicLevelAt(zapcore.InfoLevel)
+	case "error":
+		zapConfig.Level = zap.NewAtomicLevelAt(zapcore.ErrorLevel)
+	default:
+		zapConfig.Level = zap.NewAtomicLevelAt(zapcore.InfoLevel)
+	}
+
+	zapConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	defaultLogger, err = zapConfig.Build()
 	if err != nil {
 		panic(err)
 	}

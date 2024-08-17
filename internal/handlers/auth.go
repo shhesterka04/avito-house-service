@@ -20,28 +20,32 @@ func NewAuthHandlers(authService *service.AuthService) *AuthHandlers {
 func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	var req dto.PostRegisterJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger.Errorf(r.Context(), "Error decoding request: %v", err)
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.authService.Register(r.Context(), req); err != nil {
+		logger.Errorf(r.Context(), "Error registering user: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	logger.Infof(r.Context(), "User %h registered", req.Email)
+	logger.Debugf(r.Context(), "User %h registered", *req.Email)
 	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *AuthHandlers) DummyLogin(w http.ResponseWriter, r *http.Request) {
 	var req dto.GetDummyLoginParams
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger.Errorf(r.Context(), "Error decoding request: %v", err)
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
 	token, err := h.authService.DummyLogin(r.Context(), req)
 	if err != nil {
+		logger.Errorf(r.Context(), "Error dummy logging in: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -53,17 +57,19 @@ func (h *AuthHandlers) DummyLogin(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	var req dto.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger.Errorf(r.Context(), "Error decoding request: %v", err)
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
 	token, err := h.authService.Login(r.Context(), req)
 	if err != nil {
+		logger.Errorf(r.Context(), "Error logging in: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	logger.Infof(r.Context(), "User %h logged in", req.Email)
+	logger.Debugf(r.Context(), "User %h logged in", req.Email)
 	json.NewEncoder(w).Encode(token)
 }
