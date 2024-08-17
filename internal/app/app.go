@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/shhesterka04/house-service/internal/config"
+	"github.com/shhesterka04/house-service/internal/dto"
 	"github.com/shhesterka04/house-service/internal/handlers"
 	"github.com/shhesterka04/house-service/internal/middleware"
 	"github.com/shhesterka04/house-service/internal/repository"
@@ -51,7 +52,8 @@ func Run(ctx context.Context) error {
 	houseHandlers := handlers.NewHouseHandler(houseService)
 
 	flatRepo := repository.NewFlatRepository(dbConn.Cluster)
-	flatService := handlers.NewFlatService(flatRepo, houseRepo)
+	flatService := service.NewFlatService(flatRepo, houseRepo)
+	flatHandlers := handlers.NewFlatHandler(flatService)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /dummyLogin", authHandlers.DummyLogin)
@@ -59,11 +61,11 @@ func Run(ctx context.Context) error {
 	mux.HandleFunc("POST /register", authHandlers.Register)
 
 	protectedRoutes := http.NewServeMux()
-	protectedRoutes.Handle("POST /house/create", middleware.AuthMiddleware("moderator")(http.HandlerFunc(houseHandlers.CreateHouse)))
-	protectedRoutes.Handle("GET /house/{id}", middleware.AuthMiddleware("client")(http.HandlerFunc(flatService.GetFlatsByHouseID)))
-	protectedRoutes.Handle("POST /house/{id}/subscribe", middleware.AuthMiddleware("client")(http.HandlerFunc(houseHandlers.SubscribeToHouse)))
-	protectedRoutes.Handle("POST /flat/create", middleware.AuthMiddleware("client")(http.HandlerFunc(flatService.CreateFlat)))
-	protectedRoutes.Handle("POST /flat/update", middleware.AuthMiddleware("client")(http.HandlerFunc(flatService.UpdateFlat)))
+	protectedRoutes.Handle("POST /house/create", middleware.AuthMiddleware(dto.Moderator)(http.HandlerFunc(houseHandlers.CreateHouse)))
+	protectedRoutes.Handle("GET /house/{id}", middleware.AuthMiddleware(dto.Client)(http.HandlerFunc(flatHandlers.GetFlatsByHouseID)))
+	protectedRoutes.Handle("POST /house/{id}/subscribe", middleware.AuthMiddleware(dto.Client)(http.HandlerFunc(houseHandlers.SubscribeToHouse)))
+	protectedRoutes.Handle("POST /flat/create", middleware.AuthMiddleware(dto.Client)(http.HandlerFunc(flatHandlers.CreateFlat)))
+	protectedRoutes.Handle("POST /flat/update", middleware.AuthMiddleware(dto.Moderator)(http.HandlerFunc(flatHandlers.UpdateFlat)))
 
 	mux.Handle("/", protectedRoutes)
 
