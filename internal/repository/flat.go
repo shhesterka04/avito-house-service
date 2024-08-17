@@ -1,3 +1,4 @@
+//go:generate mockgen -source ./flat.go -destination=./mocks/flat_db.go -package=mocks
 package repository
 
 import (
@@ -16,6 +17,10 @@ type DBFlat interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
+}
+
+type RowDBFlat interface {
+	Scan(dest ...any) error
 }
 
 type FlatRepository struct {

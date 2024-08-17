@@ -1,3 +1,4 @@
+//go:generate mockgen -source ./house.go -destination=./mocks/house_db.go -package=mocks
 package repository
 
 import (
@@ -15,6 +16,10 @@ var ErrHouseExists = errors.New("house already exists")
 type DBHouse interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
+}
+
+type RowDBHouse interface {
+	Scan(dest ...any) error
 }
 
 type HouseRepository struct {

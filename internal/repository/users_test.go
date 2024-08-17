@@ -17,14 +17,14 @@ func TestCreateUser(t *testing.T) {
 	tests := []struct {
 		name      string
 		user      repository.User
-		setupMock func(m *mock_db.MockDBUser)
+		setupMock func(m *mocks.MockDBUser)
 		wantErr   bool
 	}{
 		{
 			name: "user already exists",
 			user: repository.User{Email: "test@example.com", Password: "password", Type: "client"},
-			setupMock: func(m *mock_db.MockDBUser) {
-				mockRow := mock_db.NewMockRow(gomock.NewController(t))
+			setupMock: func(m *mocks.MockDBUser) {
+				mockRow := mocks.NewMockRowDBUser(gomock.NewController(t))
 				mockRow.EXPECT().Scan(gomock.Any()).Return(nil).Times(1)
 				m.EXPECT().QueryRow(gomock.Any(), "SELECT id FROM users WHERE email = $1", "test@example.com").
 					Return(mockRow).Times(1)
@@ -34,8 +34,8 @@ func TestCreateUser(t *testing.T) {
 		{
 			name: "create user successfully",
 			user: repository.User{Email: "newuser@example.com", Password: "password", Type: "client"},
-			setupMock: func(m *mock_db.MockDBUser) {
-				mockRow := mock_db.NewMockRow(gomock.NewController(t))
+			setupMock: func(m *mocks.MockDBUser) {
+				mockRow := mocks.NewMockRowDBUser(gomock.NewController(t))
 				mockRow.EXPECT().Scan(gomock.Any()).Return(pgx.ErrNoRows).Times(1)
 				m.EXPECT().QueryRow(gomock.Any(), "SELECT id FROM users WHERE email = $1", "newuser@example.com").
 					Return(mockRow).Times(1)
@@ -52,7 +52,7 @@ func TestCreateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_db.NewMockDBUser(ctrl)
+			mockDB := mocks.NewMockDBUser(ctrl)
 			tt.setupMock(mockDB)
 
 			repo := repository.NewUserRepository(mockDB)
@@ -71,15 +71,15 @@ func TestGetUser(t *testing.T) {
 	tests := []struct {
 		name      string
 		email     string
-		setupMock func(m *mock_db.MockDBUser)
+		setupMock func(m *mocks.MockDBUser)
 		wantUser  repository.User
 		wantErr   bool
 	}{
 		{
 			name:  "user not found",
 			email: "notfound@example.com",
-			setupMock: func(m *mock_db.MockDBUser) {
-				mockRow := mock_db.NewMockRow(gomock.NewController(t))
+			setupMock: func(m *mocks.MockDBUser) {
+				mockRow := mocks.NewMockRowDBUser(gomock.NewController(t))
 				mockRow.EXPECT().Scan(gomock.Any()).Return(pgx.ErrNoRows).Times(1)
 				m.EXPECT().QueryRow(gomock.Any(), "SELECT * FROM users WHERE email = $1", "notfound@example.com").
 					Return(mockRow).Times(1)
@@ -90,8 +90,8 @@ func TestGetUser(t *testing.T) {
 		{
 			name:  "get user successfully",
 			email: "test@example.com",
-			setupMock: func(m *mock_db.MockDBUser) {
-				mockRow := mock_db.NewMockRow(gomock.NewController(t))
+			setupMock: func(m *mocks.MockDBUser) {
+				mockRow := mocks.NewMockRowDBUser(gomock.NewController(t))
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 					func(dest ...any) error {
 						*dest[0].(*string) = "uuid"
@@ -114,7 +114,7 @@ func TestGetUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDB := mock_db.NewMockDBUser(ctrl)
+			mockDB := mocks.NewMockDBUser(ctrl)
 			tt.setupMock(mockDB)
 
 			repo := repository.NewUserRepository(mockDB)

@@ -1,4 +1,4 @@
-//go:generate mockgen -source ./users.go -destination=./mocks/users_db.go -package=mock_db
+//go:generate mockgen -source ./users.go -destination=./mocks/users_db.go -package=mocks
 package repository
 
 import (
@@ -11,7 +11,7 @@ import (
 
 var ErrUserExists = errors.New("user already exists")
 
-type Row interface {
+type RowDBUser interface {
 	Scan(dest ...any) error
 }
 
