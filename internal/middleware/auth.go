@@ -4,14 +4,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/shhesterka04/house-service/internal/dto"
 	"github.com/shhesterka04/house-service/pkg/logger"
 )
 
-var ValidTokens = map[string]dto.UserType{
-	"client_token":    dto.Client,
-	"moderator_token": dto.Moderator,
-}
+var jwtKey = []byte("your_secret_key")
 
 func AuthMiddleware(requiredType dto.UserType) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -23,14 +21,20 @@ func AuthMiddleware(requiredType dto.UserType) func(http.Handler) http.Handler {
 				return
 			}
 
-			token := strings.TrimPrefix(authHeader, "Bearer ")
-			userType, valid := ValidTokens[token]
-			if !valid {
+			tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+			claims := &jwt.RegisteredClaims{}
+
+			token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+				return jwtKey, nil
+			})
+
+			if err != nil || !token.Valid {
 				http.Error(w, "Invalid token", http.StatusUnauthorized)
 				return
 			}
 
-			if requiredType == dto.Moderator && userType != dto.Moderator {
+			userType := claims.Subject
+			if requiredType == dto.Moderator && userType != "moderator" {
 				http.Error(w, "Insufficient permissions", http.StatusForbidden)
 				return
 			}

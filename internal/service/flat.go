@@ -1,3 +1,4 @@
+//go:generate mockgen -source ./flat.go -destination=./mocks/flat.go -package=mocks
 package service
 
 import (
@@ -6,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/shhesterka04/house-service/internal/dto"
-	"github.com/shhesterka04/house-service/internal/middleware"
 )
 
 type FlatRepo interface {
@@ -92,12 +93,16 @@ func (s *FlatService) GetFlatsByHouseID(ctx context.Context, houseIDStr, token s
 		return nil, errors.New("invalid house ID")
 	}
 
-	userType, valid := middleware.ValidTokens[token]
-	if !valid {
+	claims := &jwt.RegisteredClaims{}
+	parsedToken, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+	if err != nil || !parsedToken.Valid {
 		return nil, errors.New("invalid token")
 	}
 
-	flats, err := s.flatRepo.GetFlatByHouseID(ctx, houseID, string(userType))
+	userType := claims.Subject
+	flats, err := s.flatRepo.GetFlatByHouseID(ctx, houseID, userType)
 	if err != nil {
 		return nil, err
 	}

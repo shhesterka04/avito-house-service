@@ -1,3 +1,4 @@
+//go:generate mockgen -source ./auth.go -destination=./mocks/auth.go -package=mocks
 package service
 
 import (
@@ -61,15 +62,19 @@ func (s *AuthService) Register(ctx context.Context, req dto.PostRegisterJSONRequ
 }
 
 func (s *AuthService) DummyLogin(ctx context.Context, req dto.GetDummyLoginParams) (string, error) {
-	var token string
-	//TODO: сделать норм токены
+	var userType string
 	switch req.UserType {
 	case dto.Client:
-		token = "client_token"
+		userType = "client"
 	case dto.Moderator:
-		token = "moderator_token"
+		userType = "moderator"
 	default:
 		return "", ErrInvalidUserType
+	}
+
+	token, err := GenerateJWT(userType)
+	if err != nil {
+		return "", err
 	}
 
 	return token, nil
@@ -85,14 +90,9 @@ func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (string, 
 		return "", errors.New("invalid password")
 	}
 
-	var token string
-	switch user.Type {
-	case "client":
-		token = "client_token"
-	case "moderator":
-		token = "moderator_token"
-	default:
-		return "", errors.New("invalid user type")
+	token, err := GenerateJWT(user.Type)
+	if err != nil {
+		return "", err
 	}
 
 	return token, nil

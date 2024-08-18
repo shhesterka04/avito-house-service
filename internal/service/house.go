@@ -1,3 +1,4 @@
+//go:generate mockgen -source ./house.go -destination=./mocks/house.go -package=mocks
 package service
 
 import (

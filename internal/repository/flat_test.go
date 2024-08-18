@@ -133,7 +133,3 @@ func TestGetFlatByID(t *testing.T) {
 		})
 	}
 }
-
-// TODO
-func TestGetFlatByHouseID(t *testing.T) {
-}

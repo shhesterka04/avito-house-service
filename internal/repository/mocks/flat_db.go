@@ -140,3 +140,70 @@ func (mr *MockRowDBFlatMockRecorder) Scan(dest ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Scan", reflect.TypeOf((*MockRowDBFlat)(nil).Scan), dest...)
 }
+
+// MockRowsDBFlat is a mock of RowsDBFlat interface.
+type MockRowsDBFlat struct {
+	ctrl     *gomock.Controller
+	recorder *MockRowsDBFlatMockRecorder
+}
+
+// MockRowsDBFlatMockRecorder is the mock recorder for MockRowsDBFlat.
+type MockRowsDBFlatMockRecorder struct {
+	mock *MockRowsDBFlat
+}
+
+// NewMockRowsDBFlat creates a new mock instance.
+func NewMockRowsDBFlat(ctrl *gomock.Controller) *MockRowsDBFlat {
+	mock := &MockRowsDBFlat{ctrl: ctrl}
+	mock.recorder = &MockRowsDBFlatMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRowsDBFlat) EXPECT() *MockRowsDBFlatMockRecorder {
+	return m.recorder
+}
+
+// Close mocks base method.
+func (m *MockRowsDBFlat) Close() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Close")
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockRowsDBFlatMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockRowsDBFlat)(nil).Close))
+}
+
+// Next mocks base method.
+func (m *MockRowsDBFlat) Next() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Next")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Next indicates an expected call of Next.
+func (mr *MockRowsDBFlatMockRecorder) Next() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Next", reflect.TypeOf((*MockRowsDBFlat)(nil).Next))
+}
+
+// Scan mocks base method.
+func (m *MockRowsDBFlat) Scan(dest ...any) error {
+	m.ctrl.T.Helper()
+	varargs := []any{}
+	for _, a := range dest {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Scan", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Scan indicates an expected call of Scan.
+func (mr *MockRowsDBFlatMockRecorder) Scan(dest ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Scan", reflect.TypeOf((*MockRowsDBFlat)(nil).Scan), dest...)
+}

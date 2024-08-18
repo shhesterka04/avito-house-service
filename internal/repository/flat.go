@@ -23,6 +23,12 @@ type RowDBFlat interface {
 	Scan(dest ...any) error
 }
 
+type RowsDBFlat interface {
+	Scan(dest ...any) error
+	Next() bool
+	Close()
+}
+
 type FlatRepository struct {
 	db DBFlat
 }
