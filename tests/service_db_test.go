@@ -11,7 +11,6 @@ import (
 	"io"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/shhesterka04/house-service/internal/config"
@@ -81,14 +80,20 @@ func TestIntegration(t *testing.T) {
 		Handler: mux,
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	serverStarted := make(chan struct{})
+
 	go func() {
 		logger.Infof(ctx, "starting server on %s", cfg.HostAddr)
-		if err = server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		close(serverStarted)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			t.Fatalf("listen: %s\n", err)
 		}
 	}()
 
-	time.Sleep(1 * time.Second)
+	<-serverStarted
 
 	client := &http.Client{}
 
@@ -117,7 +122,6 @@ func TestIntegration(t *testing.T) {
 	tokenBytes, _ := io.ReadAll(resp.Body)
 	token := string(tokenBytes)
 	token = token[1 : len(token)-2]
-	fmt.Println(token)
 
 	// Step 3: Create house
 	housePayload := map[string]interface{}{
@@ -129,7 +133,6 @@ func TestIntegration(t *testing.T) {
 	req, _ := http.NewRequest("POST", "http://localhost:8080/house/create", bytes.NewBuffer(houseBody))
 	req.Header.Set("Authorization", "Bearer "+token)
 	resp, err = client.Do(req)
-	fmt.Println(resp)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -176,10 +179,9 @@ func TestIntegration(t *testing.T) {
 	req, _ = http.NewRequest("GET", fmt.Sprintf("http://localhost:8080/house/%v", houseID), nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	resp, err = client.Do(req)
-	respHoused, _ := io.ReadAll(resp.Body)
-	var housee []map[string]interface{}
-	json.Unmarshal(respHoused, &housee)
-	fmt.Println(housee)
+	readAll, _ := io.ReadAll(resp.Body)
+	var h []map[string]interface{}
+	json.Unmarshal(readAll, &h)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -191,7 +193,7 @@ func TestIntegration(t *testing.T) {
 	}
 
 	// Check for expected values
-	for i, flat := range housee {
+	for i, flat := range h {
 		assert.Equal(t, expectedData[i]["house_id"], flat["house_id"])
 		assert.Equal(t, expectedData[i]["number"], flat["number"])
 		assert.Equal(t, expectedData[i]["price"], flat["price"])
