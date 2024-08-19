@@ -34,13 +34,13 @@ func TestService_CreateFlat(t *testing.T) {
 			},
 			mockSetup: func(m *mocks.MockFlatRepo, h *mocks.MockHouseFlatRepo) {
 				m.EXPECT().CreateFlat(gomock.Any(), &dto.DtoFlat{
-					HouseId: 1,
+					HouseID: 1,
 					Number:  101,
 					Rooms:   3,
 					Price:   100000,
 					Status:  string(dto.Created),
 				}).Return(&dto.DtoFlat{
-					HouseId: 1,
+					HouseID: 1,
 					Number:  101,
 					Rooms:   3,
 					Price:   100000,
@@ -49,7 +49,7 @@ func TestService_CreateFlat(t *testing.T) {
 				h.EXPECT().UpdateHouse(gomock.Any(), 1, gomock.Any()).Return(nil, nil).Times(1)
 			},
 			wantFlat: &dto.DtoFlat{
-				HouseId: 1,
+				HouseID: 1,
 				Number:  101,
 				Rooms:   3,
 				Price:   100000,
@@ -115,20 +115,20 @@ func TestFlatService_UpdateFlat(t *testing.T) {
 			},
 			mockSetup: func(m *mocks.MockFlatRepo, h *mocks.MockHouseFlatRepo) {
 				m.EXPECT().GetFlatByID(gomock.Any(), 1).Return(&dto.DtoFlat{
-					Id:     1,
+					ID:     1,
 					Status: string(dto.Created),
 				}, nil).Times(1)
 				m.EXPECT().UpdateFlat(gomock.Any(), &dto.DtoFlat{
-					Id:     1,
+					ID:     1,
 					Status: string(validStatus),
 				}).Return(&dto.DtoFlat{
-					Id:     1,
+					ID:     1,
 					Status: string(validStatus),
 				}, nil).Times(1)
 				h.EXPECT().UpdateHouse(gomock.Any(), gomock.Eq(0), gomock.Any()).Return(nil, nil).Times(1)
 			},
 			wantFlat: &dto.DtoFlat{
-				Id:     1,
+				ID:     1,
 				Status: string(validStatus),
 			},
 			wantErr: false,
@@ -196,8 +196,8 @@ func TestFlatService_GetFlatsByHouseID(t *testing.T) {
 			mockSetup: func(m *mocks.MockFlatRepo) {
 				m.EXPECT().GetFlatByHouseID(gomock.Any(), 1, "client").Return([]*dto.DtoFlat{
 					{
-						Id:      1,
-						HouseId: 1,
+						ID:      1,
+						HouseID: 1,
 						Number:  101,
 						Rooms:   3,
 						Price:   100000,
@@ -207,8 +207,8 @@ func TestFlatService_GetFlatsByHouseID(t *testing.T) {
 			},
 			wantFlats: []*dto.DtoFlat{
 				{
-					Id:      1,
-					HouseId: 1,
+					ID:      1,
+					HouseID: 1,
 					Number:  101,
 					Rooms:   3,
 					Price:   100000,

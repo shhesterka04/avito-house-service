@@ -8,9 +8,11 @@ import (
 
 var jwtKey = []byte("your_secret_key")
 
+const loginTime = 3 * time.Hour
+
 func GenerateJWT(userType string) (string, error) {
 	claims := &jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(loginTime)),
 		Issuer:    "house-service",
 		Subject:   userType,
 	}

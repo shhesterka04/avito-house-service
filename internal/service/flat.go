@@ -36,11 +36,15 @@ func NewFlatService(flatRepo FlatRepo, houseFlatRepo HouseFlatRepo) *FlatService
 
 func (s *FlatService) CreateFlat(ctx context.Context, req dto.CreateFlatRequest) (*dto.DtoFlat, error) {
 	flat := &dto.DtoFlat{
-		HouseId: req.HouseID,
+		HouseID: req.HouseID,
 		Number:  req.Number,
 		Rooms:   req.Rooms,
 		Price:   req.Price,
 		Status:  string(dto.Created),
+	}
+
+	if !validateFlatRequest(*flat) {
+		return nil, errors.New("invalid request")
 	}
 
 	createdFlat, err := s.flatRepo.CreateFlat(ctx, flat)
@@ -79,7 +83,7 @@ func (s *FlatService) UpdateFlat(ctx context.Context, req dto.PostFlatUpdateJSON
 		return nil, err
 	}
 
-	_, err = s.houseFlatRepo.UpdateHouse(ctx, updatedFlat.HouseId, time.Now())
+	_, err = s.houseFlatRepo.UpdateHouse(ctx, updatedFlat.HouseID, time.Now())
 	if err != nil {
 		return nil, err
 	}
@@ -108,4 +112,20 @@ func (s *FlatService) GetFlatsByHouseID(ctx context.Context, houseIDStr, token s
 	}
 
 	return flats, nil
+}
+
+func validateFlatRequest(f dto.DtoFlat) bool {
+	if f.Number <= 0 {
+		return false
+	}
+
+	if f.Rooms <= 0 {
+		return false
+	}
+
+	if f.Price <= 0 {
+		return false
+	}
+
+	return true
 }

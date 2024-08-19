@@ -6,8 +6,8 @@ type LoginRequest struct {
 }
 
 type DtoFlat struct {
-	Id      int    `json:"id"`
-	HouseId int    `json:"house_id"`
+	ID      int    `json:"id"`
+	HouseID int    `json:"house_id"`
 	Status  string `json:"status"`
 	Number  int    `json:"number"`
 	Rooms   int    `json:"rooms"`

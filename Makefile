@@ -2,7 +2,7 @@ MIGRATION_FOLDER=$(CURDIR)/migrations
 DOCKER_COMPOSE_FILE=docker-compose.yml
 POSTGRES_SETUP_TEST ?= user=postgres password=postgres dbname=postgres host=postgres port=5432 sslmode=disable
 
-.PHONY: docker-compose-up migration-up migration-down build docker-build gen-dto unit-tests integration-tests
+.PHONY: docker-compose-up migration-up migration-down build docker-build gen-dto unit-tests integration-tests lint
 
 migration-up:
 	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP_TEST)" up

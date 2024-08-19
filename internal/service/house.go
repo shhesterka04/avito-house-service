@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/shhesterka04/house-service/internal/dto"
@@ -27,10 +28,26 @@ func (s *HouseService) CreateHouse(ctx context.Context, req dto.PostHouseCreateJ
 		Developer: req.Developer,
 	}
 
+	if !validateHouseRequest(*house) {
+		return nil, errors.New("invalid request")
+	}
+
 	house, err := s.houseRepo.CreateHouse(ctx, house)
 	if err != nil {
 		return nil, errors.Wrap(err, "create house")
 	}
 
 	return house, nil
+}
+
+func validateHouseRequest(h dto.House) bool {
+	if h.Address == "" {
+		return false
+	}
+
+	if h.Year <= 0 && h.Year > time.Now().Year() {
+		return false
+	}
+
+	return true
 }

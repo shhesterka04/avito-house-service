@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/pkg/errors"
 	"github.com/shhesterka04/house-service/internal/dto"
@@ -12,7 +13,15 @@ import (
 
 var (
 	ErrInvalidUserType = errors.New("invalid user type")
-	ErrHashPassword    = errors.New("hash password")
+
+	ErrorInvalidLogin = errors.New("invalid login")
+	ErrInValidEmail   = errors.New("invalid email")
+
+	re = regexp.MustCompile(emailRegex)
+)
+
+const (
+	emailRegex = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 )
 
 type UserRepo interface {
@@ -38,14 +47,26 @@ func checkPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
+func isValidEmail(email string) bool {
+	return re.MatchString(email)
+}
+
 func (s *AuthService) Register(ctx context.Context, req dto.PostRegisterJSONRequestBody) error {
 	if *req.UserType != dto.Client && *req.UserType != dto.Moderator {
 		return ErrInvalidUserType
 	}
 
+	if req.Email == nil || *req.Email == "" || !isValidEmail(string(*req.Email)) {
+		return ErrInValidEmail
+	}
+
+	if req.Password == nil || *req.Password == "" {
+		return ErrorInvalidLogin
+	}
+
 	hashedPassword, err := hashPassword(*req.Password)
 	if err != nil {
-		return ErrHashPassword
+		return ErrorInvalidLogin
 	}
 
 	user := repository.User{
@@ -83,11 +104,11 @@ func (s *AuthService) DummyLogin(ctx context.Context, req dto.GetDummyLoginParam
 func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (string, error) {
 	user, err := s.userRepo.GetUser(ctx, req.Email)
 	if err != nil {
-		return "", errors.New("invalid email")
+		return "", ErrorInvalidLogin
 	}
 
 	if !checkPasswordHash(req.Password, user.Password) {
-		return "", errors.New("invalid password")
+		return "", ErrorInvalidLogin
 	}
 
 	token, err := GenerateJWT(user.Type)

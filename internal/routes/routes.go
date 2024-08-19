@@ -17,7 +17,6 @@ func NewRouter(authHandlers *handlers.AuthHandlers, houseHandlers *handlers.Hous
 	protectedRoutes := http.NewServeMux()
 	protectedRoutes.Handle("POST /house/create", middleware.AuthMiddleware(dto.Moderator)(http.HandlerFunc(houseHandlers.CreateHouse)))
 	protectedRoutes.Handle("GET /house/{id}", middleware.AuthMiddleware(dto.Client)(http.HandlerFunc(flatHandlers.GetFlatsByHouseID)))
-	protectedRoutes.Handle("POST /house/{id}/subscribe", middleware.AuthMiddleware(dto.Client)(http.HandlerFunc(houseHandlers.SubscribeToHouse)))
 	protectedRoutes.Handle("POST /flat/create", middleware.AuthMiddleware(dto.Client)(http.HandlerFunc(flatHandlers.CreateFlat)))
 	protectedRoutes.Handle("POST /flat/update", middleware.AuthMiddleware(dto.Moderator)(http.HandlerFunc(flatHandlers.UpdateFlat)))
 

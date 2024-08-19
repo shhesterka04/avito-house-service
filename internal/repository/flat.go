@@ -40,19 +40,19 @@ func NewFlatRepository(db DBFlat) *FlatRepository {
 
 func (r *FlatRepository) CreateFlat(ctx context.Context, flat *dto.DtoFlat) (*dto.DtoFlat, error) {
 	var existingFlat dto.DtoFlat
-	err := r.db.QueryRow(ctx, "SELECT id FROM flats WHERE house_id = $1 AND number = $2", flat.HouseId, flat.Number).Scan(&existingFlat.Id)
+	err := r.db.QueryRow(ctx, "SELECT id FROM flats WHERE house_id = $1 AND number = $2", flat.HouseID, flat.Number).Scan(&existingFlat.ID)
 	if err == nil {
 		return nil, errors.Wrap(ErrFlatExists, "flat already exists")
 	} else if !errors.Is(err, pgx.ErrNoRows) {
 		return nil, errors.Wrap(err, "query row")
 	}
 
-	if _, err = r.db.Exec(ctx, "INSERT INTO flats (house_id, status, number, rooms, price) VALUES ($1, $2, $3, $4, $5)", flat.HouseId, flat.Status, flat.Number, flat.Rooms, flat.Price); err != nil {
+	if _, err = r.db.Exec(ctx, "INSERT INTO flats (house_id, status, number, rooms, price) VALUES ($1, $2, $3, $4, $5)", flat.HouseID, flat.Status, flat.Number, flat.Rooms, flat.Price); err != nil {
 		return nil, errors.Wrap(err, "create flat")
 	}
 
-	row := r.db.QueryRow(ctx, "SELECT id FROM flats WHERE house_id = $1 AND number = $2", flat.HouseId, flat.Number)
-	if err = row.Scan(&flat.Id); err != nil {
+	row := r.db.QueryRow(ctx, "SELECT id FROM flats WHERE house_id = $1 AND number = $2", flat.HouseID, flat.Number)
+	if err = row.Scan(&flat.ID); err != nil {
 		return nil, errors.Wrap(err, "get flat")
 	}
 
@@ -62,7 +62,7 @@ func (r *FlatRepository) CreateFlat(ctx context.Context, flat *dto.DtoFlat) (*dt
 }
 
 func (r *FlatRepository) UpdateFlat(ctx context.Context, flat *dto.DtoFlat) (*dto.DtoFlat, error) {
-	if _, err := r.db.Exec(ctx, "UPDATE flats SET status = $1 WHERE id = $2", flat.Status, flat.Id); err != nil {
+	if _, err := r.db.Exec(ctx, "UPDATE flats SET status = $1 WHERE id = $2", flat.Status, flat.ID); err != nil {
 		return nil, errors.Wrap(err, "update flat")
 	}
 
@@ -72,7 +72,7 @@ func (r *FlatRepository) UpdateFlat(ctx context.Context, flat *dto.DtoFlat) (*dt
 func (r *FlatRepository) GetFlatByID(ctx context.Context, id int) (*dto.DtoFlat, error) {
 	row := r.db.QueryRow(ctx, "SELECT id, house_id, status, number, rooms, price FROM flats WHERE id = $1", id)
 	flat := &dto.DtoFlat{}
-	if err := row.Scan(&flat.Id, &flat.HouseId, &flat.Status, &flat.Number, &flat.Rooms, &flat.Price); err != nil {
+	if err := row.Scan(&flat.ID, &flat.HouseID, &flat.Status, &flat.Number, &flat.Rooms, &flat.Price); err != nil {
 		return nil, errors.Wrap(err, "get flat")
 	}
 
@@ -99,7 +99,7 @@ func (r *FlatRepository) GetFlatByHouseID(ctx context.Context, houseId int, user
 	var flats []*dto.DtoFlat
 	for rows.Next() {
 		var flat dto.DtoFlat
-		if err = rows.Scan(&flat.Id, &flat.HouseId, &flat.Status, &flat.Number, &flat.Rooms, &flat.Price); err != nil {
+		if err = rows.Scan(&flat.ID, &flat.HouseID, &flat.Status, &flat.Number, &flat.Rooms, &flat.Price); err != nil {
 			return nil, errors.Wrap(err, "scan flats")
 		}
 		flats = append(flats, &flat)

@@ -73,10 +73,4 @@ func Init(config Config) {
 	if err != nil {
 		panic(err)
 	}
-
-	defer defaultLogger.Sync()
-}
-
-func GetLogger() *zap.Logger {
-	return defaultLogger
 }
