@@ -99,7 +99,7 @@ func (s *FlatService) GetFlatsByHouseID(ctx context.Context, houseIDStr, token s
 
 	claims := &jwt.RegisteredClaims{}
 	parsedToken, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
+		return JwtKey, nil
 	})
 	if err != nil || !parsedToken.Valid {
 		return nil, errors.New("invalid token")

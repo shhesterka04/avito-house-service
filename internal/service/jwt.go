@@ -6,7 +6,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var jwtKey = []byte("your_secret_key")
+var JwtKey = []byte("your_secret_key")
 
 const loginTime = 3 * time.Hour
 
@@ -18,5 +18,5 @@ func GenerateJWT(userType string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtKey)
+	return token.SignedString(JwtKey)
 }
