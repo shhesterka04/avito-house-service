@@ -47,12 +47,29 @@ func (c *Client) Connect(ctx context.Context) (*Database, error) {
 	return &Database{Cluster: pool}, nil
 }
 
-func (c *Client) Migrate(migrationDir string) error {
+func (c *Client) MigrateUp(migrationDir string) error {
 	db := stdlib.OpenDBFromPool(c.pgpool)
 	if err := goose.Up(db, migrationDir); err != nil {
 		return errors.Wrap(err, "goose up")
 	}
 
+	return nil
+}
+
+func (c *Client) MigrateDown(migrationDir string) error {
+	db := stdlib.OpenDBFromPool(c.pgpool)
+	if err := goose.Down(db, migrationDir); err != nil {
+		return errors.Wrap(err, "goose up")
+	}
+
+	return nil
+}
+
+func (c *Client) ResetMigrations(migrationDir string) error {
+	db := stdlib.OpenDBFromPool(c.pgpool)
+	if err := goose.Reset(db, migrationDir); err != nil {
+		return errors.Wrap(err, "goose reset")
+	}
 	return nil
 }
 

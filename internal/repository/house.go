@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/pkg/errors"
 	"github.com/shhesterka04/house-service/internal/dto"
+	"github.com/shhesterka04/house-service/pkg/logger"
 )
 
 var ErrHouseExists = errors.New("house already exists")
@@ -43,6 +44,8 @@ func (r *HouseRepository) CreateHouse(ctx context.Context, house *dto.House) (*d
 		return nil, errors.Wrap(err, "create house")
 	}
 
+	_ = r.db.QueryRow(ctx, "SELECT * FROM house WHERE address = $1", house.Address).Scan(&house.Id, &house.Address, &house.Year, &house.Developer, &house.CreatedAt, &house.UpdateAt)
+
 	return house, nil
 }
 
@@ -56,6 +59,8 @@ func (r *HouseRepository) UpdateHouse(ctx context.Context, id int, updAt time.Ti
 	if err := row.Scan(&house.Id, &house.Address, &house.Year, &house.Developer, &house.CreatedAt, &house.UpdateAt); err != nil {
 		return nil, errors.Wrap(err, "get house")
 	}
+
+	logger.Infof(ctx, "house updated: %v", house)
 
 	return house, nil
 }

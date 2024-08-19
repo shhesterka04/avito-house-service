@@ -39,7 +39,7 @@ func Run(ctx context.Context) error {
 	}
 	logger.Infof(ctx, "connected to database")
 
-	if err = pgClient.Migrate(migrationDir); err != nil {
+	if err = pgClient.MigrateUp(migrationDir); err != nil {
 		logger.Errorf(ctx, "migrate error: %v", err)
 		return errors.Wrap(err, "migrate")
 	}

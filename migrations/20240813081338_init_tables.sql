@@ -38,6 +38,8 @@ CREATE INDEX idx_house_id ON flats(house_id);
 
 -- +goose Down
 -- +goose StatementBegin
+DROP INDEX idx_house_id;
+
 DROP TABLE users;
 DROP TABLE flats;
 DROP TABLE house;
@@ -45,5 +47,4 @@ DROP TABLE house;
 DROP TYPE user_type;
 DROP TYPE flat_status;
 
-DROP INDEX idx_house_id;
 -- +goose StatementEnd

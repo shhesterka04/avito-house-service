@@ -3,11 +3,11 @@ package service
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/pkg/errors"
 	"github.com/shhesterka04/house-service/internal/dto"
 )
 
@@ -69,7 +69,7 @@ func (s *FlatService) UpdateFlat(ctx context.Context, req dto.PostFlatUpdateJSON
 
 	flat, err := s.flatRepo.GetFlatByID(ctx, req.Id)
 	if err != nil {
-		return nil, errors.New("DtoFlat not found")
+		return nil, errors.Wrap(err, "get flat")
 	}
 
 	flat.Status = string(*req.Status)

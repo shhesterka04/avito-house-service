@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/pkg/errors"
 	"github.com/shhesterka04/house-service/internal/dto"
+	"github.com/shhesterka04/house-service/pkg/logger"
 )
 
 var ErrFlatExists = errors.New("flat already exists")
@@ -49,6 +50,13 @@ func (r *FlatRepository) CreateFlat(ctx context.Context, flat *dto.DtoFlat) (*dt
 	if _, err = r.db.Exec(ctx, "INSERT INTO flats (house_id, status, number, rooms, price) VALUES ($1, $2, $3, $4, $5)", flat.HouseId, flat.Status, flat.Number, flat.Rooms, flat.Price); err != nil {
 		return nil, errors.Wrap(err, "create flat")
 	}
+
+	row := r.db.QueryRow(ctx, "SELECT id FROM flats WHERE house_id = $1 AND number = $2", flat.HouseId, flat.Number)
+	if err = row.Scan(&flat.Id); err != nil {
+		return nil, errors.Wrap(err, "get flat")
+	}
+
+	logger.Infof(ctx, "Flat created: %v", flat)
 
 	return flat, nil
 }
