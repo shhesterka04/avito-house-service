@@ -2,6 +2,8 @@
 
 ### Как запустить сервис
 
+Перед запуском сервиса необходимо установить golang, docker и docker-compose
+
 Для начала нужно склонировать репозиторий и перейти в папку проекта
 ```bash
     git clone git@github.com:shhesterka04/house-service.git
